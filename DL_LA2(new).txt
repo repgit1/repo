@@ -1,0 +1,52 @@
+import numpy as np 
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense,Dropout
+from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.datasets import mnist
+import matplotlib.pyplot as plt
+from sklearn import metrics
+
+path='mnist.npz'
+(x_train,y_train), (x_test,y_test) =mnist.load_data(path=path)
+
+plt.imshow(x_train[10], 'gray')
+
+print(x_train[10])
+
+print("X_train shape", x_train.shape) #dimensions of the array
+print("y_train shape", y_train.shape)
+print("X_test shape", x_test.shape)
+print("y_test shape", y_test.shape)
+
+x_train = x_train.reshape(60000, 784)
+x_test = x_test.reshape(10000, 784)
+x_train = x_train.astype('float32')/255.0
+
+x_test = x_test.astype('float32')/255.0
+#x_train /= 255 # Each image has Intensity from 0 to 255
+#x_test /= 255
+
+num_classes = 10  # represent categorical data, such as class labels, in a binary format that is suitable for machine learning algorithms.
+y_train = np.eye(num_classes)[y_train]
+y_test = np.eye(num_classes)[y_test] # Each row of this matrix corresponds to a unique class, and the columns represent the different classes
+
+model = Sequential()
+model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.2))
+model.add(Dense(512, activation='relu')) #returns a sequence of another vectors of dimension 512
+model.add(Dropout(0.2))
+model.add(Dense(num_classes, activation='softmax'))
+model.compile(loss='categorical_crossentropy', # for a multi-class classification problem
+optimizer=RMSprop(),
+metrics=['accuracy'])
+batch_size = 128 # batch_size argument is passed to the layer to define a batch size for the inputs.
+epochs = 10
+history = model.fit(x_train, y_train,
+batch_size=batch_size,
+epochs=epochs,
+verbose=1, # verbose=1 will show you an animated progress bar eg. [==========]
+validation_data=(x_test, y_test))
+
+score = model.evaluate(x_test, y_test, verbose=0)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
